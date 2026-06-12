@@ -84,6 +84,11 @@ bool checkWall(Snake* ran, int width, int height) {
     if (dau.x <= 0 || dau.x >= width - 1 || dau.y <= 0 || dau.y >= height - 1) {
         return true; // Bị đâm tường
     }
+    for(int l = 2; l < ran->length; l++){
+        if(ran->sn[0].x == ran->sn[l].x &&ran->sn[0].y == ran->sn[l].y){
+            return true;
+        }
+    }
     return false; // Vẫn an toàn
 }
 
@@ -109,6 +114,7 @@ void eatFood(Snake*ran, Point* moi, int width, int height){
         position(moi, width, height);
     }
 }
+
 int main(){
     int width = 30;
     int height = 10; 
@@ -117,8 +123,15 @@ int main(){
     position(&moi, width, height);
     Snake ran;
     init(&ran, width, height);
+    COORD coord;
+    coord.X = 0, coord.Y = 0;
+    CONSOLE_CURSOR_INFO cursor;
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleCursorInfo(handle, &cursor); // Lấy thông tin con trỏ hiện tại
+    cursor.bVisible = false;
     while(true){
-        system("cls");
+        SetConsoleCursorPosition(handle, coord);
+        SetConsoleCursorInfo(handle, &cursor);
         bounder(moi, width, height, &ran);
         input(&ran);
         move(&ran);
