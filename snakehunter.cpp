@@ -1,6 +1,8 @@
 #include<iostream>
 #include <cstdlib> 
 #include <ctime>
+#include <conio.h> // Nhớ thêm thư viện này ở đầu file để dùng _kbhit() và _getch()
+#include<windows.h>
 
 using namespace std;
 struct Point{
@@ -13,8 +15,8 @@ struct Snake{
 };
 void init(Snake*ran, int width, int height){
     ran->length = 3 ;
-    int x = rand() % (width - 4) + 1;
-    int y = rand() % (height - 2) + 1;
+    int x = width/2;
+    int y = height/2;
     ran->sn[0].x = x + 2;
     ran->sn[0].y = y;
     ran->sn[1].x = x + 1;
@@ -58,14 +60,78 @@ void bounder(Point moi, int width, int height, Snake*ran ){
         cout<< endl;
     }
 }
+void move(Snake* ran) {
+    // 1. Cập nhật tọa độ cho phần thân (chạy ngược từ đuôi lên đầu)
+    for (int k = ran->length - 1; k > 0; k--) {
+        ran->sn[k] = ran->sn[k - 1];
+    }
 
+    // 2. Cập nhật tọa độ cho đầu rắn dựa vào hướng "durex"
+    if (ran->durex == 'd') {          // Sang phải
+        ran->sn[0].x++;
+    } else if (ran->durex == 'a') {   // Sang trái
+        ran->sn[0].x--;
+    } else if (ran->durex == 'w') {   // Đi lên (trong console, càng lên trên y càng giảm)
+        ran->sn[0].y--;
+    } else if (ran->durex == 's') {   // Đi xuống (càng xuống dưới y càng tăng)
+        ran->sn[0].y++;
+    }
+}
+bool checkWall(Snake* ran, int width, int height) {
+    Point dau = ran->sn[0];
+    
+    // Nếu đầu chạm vào tường bao quanh
+    if (dau.x <= 0 || dau.x >= width - 1 || dau.y <= 0 || dau.y >= height - 1) {
+        return true; // Bị đâm tường
+    }
+    return false; // Vẫn an toàn
+}
+
+void input(Snake* ran) {
+    if (_kbhit()) { // Nếu người chơi có bấm phím
+        char key = _getch(); // Lấy phím đó ra
+        
+        // Kiểm tra và đổi hướng (chặn quay đầu 180 độ)
+        if (key == 'w' && ran->durex != 's') {
+            ran->durex = 'w';
+        } else if (key == 's' && ran->durex != 'w') {
+            ran->durex = 's';
+        } else if (key == 'a' && ran->durex != 'd') {
+            ran->durex = 'a';
+        } else if (key == 'd' && ran->durex != 'a') {
+            ran->durex = 'd';
+        }
+    }
+}
+void eatFood(Snake*ran, Point* moi, int width, int height){
+    if(ran->sn[0].x == moi->x && ran->sn[0].y == moi->y){
+        ran->length++;
+        position(moi, width, height);
+    }
+}
 int main(){
-    int width = 10;
-    int height = 7; 
+    int width = 30;
+    int height = 10; 
     srand(time(0));   
     Point moi;
     position(&moi, width, height);
     Snake ran;
     init(&ran, width, height);
-    bounder(moi, width, height, &ran);
+    while(true){
+        system("cls");
+        bounder(moi, width, height, &ran);
+        input(&ran);
+        move(&ran);
+        eatFood(&ran, &moi, width, height);
+        if (checkWall(&ran, width, height)){
+            system("cls"); // Xóa màn hình game đi
+            cout << "=========================" << endl;
+            cout << "   GAME OVER X_X !!!     " << endl;
+            cout << "=========================" << endl;
+            break; // Thoát vòng lặp, kết thúc game
+        }
+        Sleep(150);
+    }
+    system("pause");
+    return 0;
 }
