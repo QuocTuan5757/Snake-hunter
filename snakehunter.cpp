@@ -12,9 +12,11 @@ struct Snake{
     Point sn[100];
     int length;
     char durex; 
+    int score;
 };
 void init(Snake*ran, int width, int height){
     ran->length = 3 ;
+    ran->score = 0;
     int x = width/2;
     int y = height/2;
     ran->sn[0].x = x + 2;
@@ -79,7 +81,6 @@ void move(Snake* ran) {
 }
 bool checkWall(Snake* ran, int width, int height) {
     Point dau = ran->sn[0];
-    
     // Nếu đầu chạm vào tường bao quanh
     if (dau.x <= 0 || dau.x >= width - 1 || dau.y <= 0 || dau.y >= height - 1) {
         return true; // Bị đâm tường
@@ -112,9 +113,9 @@ void eatFood(Snake*ran, Point* moi, int width, int height){
     if(ran->sn[0].x == moi->x && ran->sn[0].y == moi->y){
         ran->length++;
         position(moi, width, height);
+        ran->score += 5;
     }
 }
-
 int main(){
     int width = 30;
     int height = 10; 
@@ -136,6 +137,7 @@ int main(){
         input(&ran);
         move(&ran);
         eatFood(&ran, &moi, width, height);
+        printf("Diem: %d\n ",ran.score);
         if (checkWall(&ran, width, height)){
             system("cls"); // Xóa màn hình game đi
             cout << "=========================" << endl;
